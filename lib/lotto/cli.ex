@@ -89,11 +89,17 @@ defmodule Lotto.CLI do
     nmbrs = opts.datafile
       |> Lotto.Frequencies.data_from_filename()
 
-    games = nmbrs
+    uniq_nmbrs = nmbrs
       |> listfn.(opts.count)
+
+    games = uniq_nmbrs
       |> Lotto.Combos.combo(opts.select)
 
-    IO.puts "#{Enum.count(games)} game(s) generated"
+    IO.write "#{Enum.count(games)} game(s) generated using: ["
+    for {uniq, _k} <- Enum.with_index(uniq_nmbrs |> Enum.intersperse(", ")) do
+      IO.write if (uniq == ", "), do: uniq, else: String.pad_leading("#{uniq}", 2, " ")
+    end
+    IO.puts "]"
 
     for {game, i} <- Enum.with_index(games) do
       IO.write String.pad_leading("#{i+1}", 2, "0") <> ": "
@@ -109,4 +115,4 @@ defmodule Lotto.CLI do
   defp error(msg) do
     IO.puts "error: #{msg}"
   end
- end
+  end
