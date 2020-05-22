@@ -84,19 +84,26 @@ defmodule Lotto.CLI do
     freq   = (if (opts.least), do: "least", else: "most") <> " frequent"
     listfn = (if (opts.least), do: &Lotto.Frequencies.infrequent_list/2, else: &Lotto.Frequencies.frequent_list/2)
 
-    IO.puts "Processing: '#{opts.datafile}', selecting: #{opts.select} numbers from #{opts.count} #{freq} numbers "
-
-    nmbrs = opts.datafile
+    nmbrs =
+      opts.datafile
       |> Lotto.Frequencies.data_from_filename()
 
-    uniq_nmbrs = nmbrs
+    uniqs =
+      nmbrs
       |> listfn.(opts.count)
 
-    games = uniq_nmbrs
+    games =
+      uniqs
       |> Lotto.Combos.combo(opts.select)
 
+    output(%{ opts: opts, freq: freq, nmbrs: nmbrs, uniqs: uniqs, games: games})
+  end
+
+  defp output(%{ opts: opts, freq: freq, nmbrs: _nmbrs, uniqs: uniqs, games: games}) do
+    IO.puts "Processing: '#{opts.datafile}', selecting: #{opts.select} numbers from #{opts.count} #{freq} numbers "
+
     IO.write "#{Enum.count(games)} game(s) generated using: ["
-    for {uniq, _k} <- Enum.with_index(uniq_nmbrs |> Enum.intersperse(", ")) do
+    for {uniq, _k} <- Enum.with_index(uniqs |> Enum.intersperse(", ")) do
       IO.write if (uniq == ", "), do: uniq, else: String.pad_leading("#{uniq}", 2, " ")
     end
     IO.puts "]"
