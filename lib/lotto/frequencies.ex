@@ -3,13 +3,13 @@ defmodule Lotto.Frequencies do
   # @freq_file_name "../../data/frequencies_bad_data.csv"
   @freq_file_name "../../data/frequencies_201510-202005.csv"
 
-  defp data do
+  def data do
     data_from_filename()
   end 
 
-  defp data_from_filename(filename \\ @freq_file_name) do
+  def data_from_filename(filename \\ @freq_file_name) do
     filename
-    |> Path.expand(__DIR__)
+    |> Path.expand(File.cwd!)
     |> File.stream!
     |> data_from_stream
   end
@@ -35,19 +35,19 @@ defmodule Lotto.Frequencies do
    end
 
 
-  def dump do
-    data()
+  def dump(stream) do
+    stream
     |> Enum.map(fn [numb, freq] -> IO.puts "#{numb}: #{freq}" end)
     :ok
   end
 
-  def to_list do
-    data()
+  def to_list(stream) do
+    stream
     |> Enum.to_list
   end 
 
-  def to_map do
-    data()
+  def to_map(stream) do
+    stream
     |> Stream.map(fn [n,f] -> %{ n => f} end)
     |> Enum.reduce(fn x, y -> Map.merge(x, y) end)
   end 
@@ -60,31 +60,31 @@ defmodule Lotto.Frequencies do
   defp infrequent_cmprtr(a, b), do: Enum.at(a,1) <= Enum.at(b,1)
 
 
-  def frequent_list_with_counts(n \\ 6) do
-    frequent_list_with_counts(n, &frequent_cmprtr/2)
+  def frequent_list_with_counts(stream, n \\ 6) do
+    frequent_list_with_counts(stream, n, &frequent_cmprtr/2)
   end
 
-  def infrequent_list_with_counts(n \\ 6) do
-    frequent_list_with_counts(n, &infrequent_cmprtr/2)
+  def infrequent_list_with_counts(stream, n \\ 6) do
+    frequent_list_with_counts(stream, n, &infrequent_cmprtr/2)
   end
 
-  defp frequent_list_with_counts(n, cmprtr) do
-    data()
+  defp frequent_list_with_counts(stream, n, cmprtr) do
+    stream
     |> Enum.sort(cmprtr)
     |> Enum.take(n)
   end
 
 
-  def frequent_list(n \\ 6) do
-    frequent_list(n, &frequent_cmprtr/2)
+  def frequent_list(stream, n \\ 6) do
+    frequent_list(stream, n, &frequent_cmprtr/2)
   end
 
-  def infrequent_list(n \\ 6) do
-    frequent_list(n, &infrequent_cmprtr/2)
+  def infrequent_list(stream, n \\ 6) do
+    frequent_list(stream, n, &infrequent_cmprtr/2)
   end
 
-  defp frequent_list(n, cmprtr) do
-    data()
+  defp frequent_list(stream, n, cmprtr) do
+    stream 
     |> Enum.sort(cmprtr)
     |> Enum.take(n)
     |> Enum.map(fn x -> Enum.at(x,0) end)
