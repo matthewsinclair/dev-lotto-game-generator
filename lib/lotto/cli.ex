@@ -102,11 +102,11 @@ defmodule Lotto.CLI do
     IO.puts "]"
 
     for {game, i} <- Enum.with_index(games) do
-      IO.write String.pad_leading("#{i+1}", 2, "0") <> ": "
+      IO.write String.pad_leading("#{i+1}", 2, "0") <> ": ["
       for {nmbr, _j} <- Enum.with_index(game |> Enum.intersperse(", ")) do
         IO.write if (nmbr == ", "), do: nmbr, else: String.pad_leading("#{nmbr}", 2, " ")
       end
-      IO.puts ""
+      IO.puts "]"
     end
     :ok
   end
