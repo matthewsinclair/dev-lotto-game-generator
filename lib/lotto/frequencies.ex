@@ -171,6 +171,7 @@ defmodule Lotto.Frequencies do
     frequent_list(stream, n, &infrequent_cmprtr/2)
   end
 
+  # Saves some repetition by allow for supply of frequent/infrequent comparator.
   defp frequent_list(stream, n, cmprtr) do
     stream 
     |> Enum.sort(cmprtr)
