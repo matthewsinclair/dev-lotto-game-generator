@@ -122,4 +122,4 @@ defmodule Lotto.CLI do
   defp error(msg) do
     IO.puts "error: #{msg}"
   end
-  end
+end
