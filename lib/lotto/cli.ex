@@ -5,20 +5,24 @@ defmodule Lotto.CLI do
   synopsis:
     Generate Lotto numbers from frequency tables
   usage:
-    $ lotto {options} datafile
+    $ lotto {options} file
+    $ lotto --scrape url
   options:
-    --least       Use least frequently selected numbers (defaults to true)
-    --most        Use most frequently selected numbers (defaults to false)
-    --select=S    Number of Lotto numbers to select (defaults to 6)
-    --count=C     Number of frequency numbers to draw from (defaults to 8)
+    --least           Use least frequently selected numbers (defaults to true)
+    --most            Use most frequently selected numbers (defaults to false)
+    --select=S        Number of Lotto numbers to select (defaults to 6)
+    --count=C         Number of frequency numbers to draw from (defaults to 8)
+    --scrape          Scrape the URL provided and dump [numb,freq] in CSV format
   where:
-    datafile      Comma-separated CSV file of the form:
+    file  Comma-separated CSV file of the form:
 
-                  # datafile.csv
-                  number, frequency
-                  1, 345
-                  2, 340
-                  ...
+          # datafile.csv
+          number, frequency
+          1, 345
+          2, 340
+          ...
+
+    url   URL containing list of lotto numbers with frequencies
   """
 
   
@@ -28,21 +32,19 @@ defmodule Lotto.CLI do
   end
   
 
-  @option_parser_switches [select: :integer, count: :integer, most: :boolean, least: :boolean]
+  @option_parser_switches [select: :integer, count: :integer, most: :boolean, least: :boolean, scrape: :boolean]
   defp parse(args) do
-    options  = %{select: 6, count: 8, most: false, least: false}
+    options  = %{select: 6, count: 8, most: false, least: false, scrape: false}
     switches = @option_parser_switches
     aliases  = [h: :help, m: :most, l: :least, s: :select, c: :count]
     parse    = OptionParser.parse(args, switches: switches, aliases: aliases)
 
     case parse do
       { [help: true], _, _   } -> :help
-      { [], args, []         } -> { options, args }
-      { opts, args, []       } -> { Enum.into(opts, options), args }
-      { opts, args, bad_opts } -> {
-        Enum.into(merge_opts(opts, bad_opts), options), args
-      }
-      _ -> {:help, args}
+      { [], args, []         } -> {options, args}
+      { opts, args, []       } -> {Enum.into(opts, options), args}
+      { opts, args, bad_opts } -> {Enum.into(merge_opts(opts, bad_opts), options), args}
+      _                        -> {:help, args}
     end
   end
   defp merge_opts(opts, bad_opts) do
@@ -71,21 +73,34 @@ defmodule Lotto.CLI do
       most:     !(options.least or !options.most),  # most is just ! of least 
       select:   options.select,
       count:    max(options.select, options.count),
-      datafile: Enum.at(args, 0)
+      scrape:   options.scrape,
+      source:   Enum.at(args, 0)
     }
   end
 
 
+  # Do nothing
   defp process(:ok), do: :ok
-  defp process(%{ least: _, most: _, select: _, count: _, datafile: nil} = _opts) do
-    error("no input file specified")
+
+  # Fail with error if no input file specified
+  defp process(%{ least: _, most: _, select: _, count: _, scrape: false, source: nil} = _opts) do
+    error("no input specified")
   end
+
+  # Scrape the provided URL and dump as CSV to :stdout
+  defp process(%{ least: _, most: _, select: _, count: _, scrape: true, source: url} = _opts) do
+    url
+    |> Lotto.Scraper.scrape_frequencies_from
+    |> Lotto.Scraper.dump_csv
+  end
+
+  # Read from file and generate game combos.
   defp process(opts) do
     freq   = (if (opts.least), do: "least", else: "most") <> " frequent"
     listfn = (if (opts.least), do: &Lotto.Frequencies.infrequent_list/2, else: &Lotto.Frequencies.frequent_list/2)
 
     nmbrs =
-      opts.datafile
+      opts.source
       |> Lotto.Frequencies.data_from_filename()
 
     uniqs =
@@ -99,8 +114,9 @@ defmodule Lotto.CLI do
     output(%{ opts: opts, freq: freq, nmbrs: nmbrs, uniqs: uniqs, games: games})
   end
 
+  # Dump output in a nice format. 
   defp output(%{ opts: opts, freq: freq, nmbrs: _nmbrs, uniqs: uniqs, games: games}) do
-    IO.puts "Processing: '#{opts.datafile}', selecting: #{opts.select} numbers from #{opts.count} #{freq} numbers "
+    IO.puts "Processing: '#{opts.source}', selecting: #{opts.select} numbers from #{opts.count} #{freq} numbers "
 
     IO.write "#{Enum.count(games)} game(s) generated using: ["
     for {uniq, _k} <- Enum.with_index(uniqs |> Enum.intersperse(", ")) do
@@ -118,7 +134,7 @@ defmodule Lotto.CLI do
     :ok
   end
 
-
+  # Very simple error processing. 
   defp error(msg) do
     IO.puts "error: #{msg}"
   end
