@@ -26,6 +26,7 @@ defmodule Lotto.CLI do
   """
 
   require Logger
+
   
   def main(), do: main([])
   def main(args) do
