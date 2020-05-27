@@ -5,11 +5,18 @@ defmodule Lotto.Scraper do
   """
 
   @doc """
+  Scrape a map of %{number => frequency} from the default URL defined at @Lotto.Spider.scrape_url.
+  """
+  def scrape_frequencies_from(nil) do
+    scrape_frequencies_from(Lotto.Spider.scrape_url)
+  end
+
+  @doc """
   Scrape a map of %{number => frequency} from URL, defaulting to @Lotto.Spider.scrape_url.
   """
-  def scrape_frequencies_from(url \\ Lotto.Spider.scrape_url) do
-    # url = if (url == ""), do: Lotto.Spider.scrape_url, else: url
-    resp = Crawly.fetch(if (url == ""), do: Lotto.Spider.scrape_url, else: url)
+  def scrape_frequencies_from(url) do
+    url  = if (url == ""), do: Lotto.Spider.scrape_url, else: url
+    resp = Crawly.fetch(url)
     case Floki.parse_document(resp.body) do
       {:ok, doc}       -> extract_numbs_and_freqs_from(doc)
       {:error, reason} -> {:error, reason}
