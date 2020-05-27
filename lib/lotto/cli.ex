@@ -25,6 +25,7 @@ defmodule Lotto.CLI do
     url   URL containing list of lotto numbers with frequencies
   """
 
+  require Logger
   
   def main(), do: main([])
   def main(args) do
@@ -136,6 +137,6 @@ defmodule Lotto.CLI do
 
   # Very simple error processing. 
   defp error(msg) do
-    IO.puts "error: #{msg}"
+    Logger.error(msg)
   end
 end
