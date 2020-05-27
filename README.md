@@ -10,7 +10,7 @@ Please note: before anyone decides to email me with a reference to "[The Gambler
 
 ## Usage 
 
-``` elixir
+```
 % ./lotto --help
 Lotto Number Generator (ver: 0.1.0)
 
