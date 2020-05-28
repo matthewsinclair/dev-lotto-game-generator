@@ -8,6 +8,9 @@ The result is a pretty rudimentary answer to that question that does a couple of
 
 Please note: before anyone decides to email me with a reference to "[The Gambler's Fallacy](https://www.investopedia.com/terms/g/gamblersfallacy.asp)", I am well aware the statistical and probabilistic lunacy of what this program is trying to do and am under no illiusion whatsoever that it will select "correct" or "winning" Lotto numbers in any form. This is purely for the technical exercise of reading and processing the data in a functional manner using Elxir. 
 
+Hat tip to [@jcf](https://github.com/jcf) and his Clojure-based [lotto-stats](https://github.com/jcf/lotto-stats) repo which he build in about 2 hours after we had a conversation that I was doing this with Elixir as a learning exercise. 
+
+
 ## Usage 
 
 ```
